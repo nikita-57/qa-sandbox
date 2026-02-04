@@ -145,12 +145,12 @@ function App() {
               A curated mix of gadgets and accessories with fast delivery and trusted suppliers.
             </p>
             <a
-              href="http://127.0.0.1:8000/docs"
+              href="http://94.228.120.6:8000/docs"
               target="_blank"
               rel="noreferrer"
               className="inline-flex items-center gap-2 mt-4 text-xs font-mono text-cyber-blue hover:text-white border border-cyber-blue/40 hover:border-cyber-blue px-3 py-2 rounded-md bg-white/5 hover:bg-cyber-blue/20 transition-all"
             >
-              Swagger API docs → http://127.0.0.1:8000/docs
+              Swagger API docs → http://94.228.120.6:8000/docs
             </a>
           </div>
 
