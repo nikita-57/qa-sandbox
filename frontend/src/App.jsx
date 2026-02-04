@@ -116,6 +116,11 @@ function App() {
     }
   };
 
+  const handleBuy = (product) => {
+    console.log("Buy clicked:", product);
+    alert(`Added to cart: ${product.name} — $${product.price}`);
+  };
+
   return (
     <div className="min-h-screen relative overflow-hidden text-white">
       {/* Ambient glows */}
@@ -388,7 +393,10 @@ function App() {
                     >
                       <Edit2 size={16} />
                     </button>
-                    <button className="flex-1 bg-gradient-to-r from-white/10 via-white/5 to-white/10 hover:from-cyber-pink hover:via-cyber-blue hover:to-cyber-pink p-3 transition-all text-[11px] font-black uppercase tracking-[0.2em] flex items-center justify-center gap-2 border border-white/10 rounded-lg hover:text-black hover:shadow-[0_0_25px_rgba(255,0,128,0.35)]">
+                    <button
+                      onClick={() => handleBuy(product)}
+                      className="flex-1 bg-gradient-to-r from-white/10 via-white/5 to-white/10 hover:from-cyber-pink hover:via-cyber-blue hover:to-cyber-pink p-3 transition-all text-[11px] font-black uppercase tracking-[0.2em] flex items-center justify-center gap-2 border border-white/10 rounded-lg hover:text-black hover:shadow-[0_0_25px_rgba(255,0,128,0.35)]"
+                    >
                       <ShoppingCart size={14} /> Buy
                     </button>
                   </div>
