@@ -49,10 +49,10 @@ function App() {
       .catch(err => console.error("Fetch error:", err));
   };
 
-  // Price input: only positive numbers, dot/comma separator
+  // Price input: only positive integers
   const handlePriceChange = (e) => {
-    const value = e.target.value.replace(',', '.');
-    const allowed = /^\\d*(\\.\\d{0,2})?$/; // up to two decimals
+    const value = e.target.value;
+    const allowed = /^\\d*$/;
     if (value === '' || allowed.test(value)) {
       setPrice(value);
     }
@@ -88,10 +88,10 @@ function App() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const token = localStorage.getItem('cyber_token');
-    const numericPrice = parseFloat(price);
+    const numericPrice = parseInt(price, 10);
 
     if (Number.isNaN(numericPrice) || numericPrice < 0) {
-      alert("Price must be a positive number");
+      alert("Price must be a positive integer");
       return;
     }
 
@@ -226,10 +226,6 @@ function App() {
                   {editingId ? <Edit2 size={18} className="text-cyber-blue" /> : <PlusCircle size={18} className="text-cyber-pink" />}
                   {editingId ? `Update product #${editingId}` : 'Add product'}
                 </h2>
-                <div className="flex gap-2 text-[11px] uppercase tracking-[0.25em] font-mono">
-                  <span className="px-3 py-1 rounded-full border border-cyber-blue/40 text-cyber-blue bg-cyber-blue/10">Saved</span>
-                  <span className="px-3 py-1 rounded-full border border-white/10 text-white/60">Online</span>
-                </div>
               </div>
 
               <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -244,7 +240,7 @@ function App() {
                 <div className="flex flex-col gap-2">
                   <label className="text-[11px] uppercase tracking-[0.2em] text-white/60 font-mono">Price ($)</label>
                   <input
-                    type="number" inputMode="decimal" min="0" step="0.01" pattern="\\d*(\\.\\d{0,2})?" placeholder="1200"
+                    type="number" inputMode="numeric" min="0" step="1" pattern="\\d*" placeholder="1200"
                     className="bg-black/60 border border-white/10 p-3 focus:border-cyber-blue outline-none text-sm rounded-lg"
                     value={price} onChange={handlePriceChange} required
                   />
