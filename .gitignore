@@ -1,0 +1,30 @@
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Node
+frontend/node_modules
+frontend/.vite
+frontend/dist
+npm-debug.log*
+yarn-error.log*
+
+# Python
+backend/venv
+*.pyc
+__pycache__/
+
+# Env / config
+.env
+.env.*
+
+# SQLite DB
+backend/sandbox.db
+
+# Logs
+logs/
+*.log
+
+# Docker artifacts
+*.pid
+
