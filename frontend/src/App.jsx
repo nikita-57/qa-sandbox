@@ -52,7 +52,7 @@ function App() {
   // Price input: only positive integers
   const handlePriceChange = (e) => {
     const value = e.target.value;
-    const allowed = /^\\d*$/;
+  const allowed = /^\d*$/;
     if (value === '' || allowed.test(value)) {
       setPrice(value);
     }
