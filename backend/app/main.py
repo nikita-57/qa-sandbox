@@ -12,6 +12,7 @@ app = FastAPI(
     title="CyberShop QA Sandbox",
     description="Песочница для отработки навыков тестирования API.",
     version="1.0.0",
+    root_path="/api",
 )
 
 # --- НАСТРОЙКА CORS ---
