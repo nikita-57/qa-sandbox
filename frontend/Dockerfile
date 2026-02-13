@@ -1,14 +1,20 @@
-FROM node:20-alpine
+# ---------- BUILD STAGE ----------
+FROM node:20 AS builder
 
 WORKDIR /app
+COPY package*.json ./
+RUN npm install
 
-COPY frontend/package*.json ./
-RUN npm ci
-
-COPY frontend .
-
+COPY . .
 RUN npm run build
 
-EXPOSE 4173
 
-CMD ["npm", "run", "preview", "--", "--host", "0.0.0.0", "--port", "4173"]
+# ---------- NGINX STAGE ----------
+FROM nginx:stable-alpine
+
+COPY --from=builder /app/dist /usr/share/nginx/html
+
+# nginx config
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+EXPOSE 80

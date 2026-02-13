@@ -1,7 +1,3 @@
 export default defineConfig({
-  server: {
-    host: true,
-    allowedHosts: true
-  }
-
+  plugins: [react()],
 })
