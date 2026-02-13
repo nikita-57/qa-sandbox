@@ -196,6 +196,15 @@ function App() {
                 </h2>
                 <span className="text-[11px] font-mono text-white/60 uppercase tracking-[0.3em]">Secure sign-in</span>
               </div>
+              <div className="mb-6 p-4 rounded-lg border border-cyber-blue/30 bg-cyber-blue/10 text-sm text-white/80">
+                <p className="font-semibold text-cyber-blue mb-2">Как начать работу в этой песочнице</p>
+                <ol className="list-decimal list-inside space-y-1 text-white/75">
+                  <li>Откройте документацию API: <a className="text-cyber-blue underline" href="/api/docs" target="_blank" rel="noreferrer">/api/docs</a>.</li>
+                  <li>Создайте пользователя через <span className="font-mono">POST /auth/register</span> (email + password).</li>
+                  <li>Войдите ниже, используя этот же email и пароль.</li>
+                  <li>После входа можно создавать и редактировать товары.</li>
+                </ol>
+              </div>
               <form onSubmit={handleLogin} className="flex flex-col gap-5">
                 <div className="flex flex-col gap-2">
                   <label className="text-xs uppercase tracking-[0.2em] text-white/50 font-mono">Email</label>
