@@ -28,3 +28,7 @@ logs/
 
 # Docker artifacts
 *.pid
+
+# TLS certificates
+certbot/conf
+certbot/www
