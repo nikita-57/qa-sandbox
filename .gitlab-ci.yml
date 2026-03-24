@@ -1,0 +1,96 @@
+stages:
+  - build
+  - deploy
+
+variables:
+  DOCKER_BUILDKIT: "1"
+  STAGE_NGINX_CONF: "nginx-stage.conf"
+
+# Required CI/CD variables:
+# SSH_PRIVATE_KEY
+# STAGE_SSH_HOST
+# STAGE_SSH_USER
+# STAGE_DEPLOY_PATH
+# Optional:
+# SSH_KNOWN_HOSTS
+
+.build_image:
+  stage: build
+  image: docker:27.1.2
+  services:
+    - docker:27.1.2-dind
+  variables:
+    DOCKER_HOST: tcp://docker:2375
+    DOCKER_TLS_CERTDIR: ""
+  before_script:
+    - echo "$CI_REGISTRY_PASSWORD" | docker login "$CI_REGISTRY" -u "$CI_REGISTRY_USER" --password-stdin
+  script:
+    - docker build -f "$DOCKERFILE" -t "$CI_REGISTRY_IMAGE/$IMAGE_NAME:$CI_COMMIT_SHA" -t "$CI_REGISTRY_IMAGE/$IMAGE_NAME:$CI_COMMIT_REF_SLUG-latest" "$BUILD_CONTEXT"
+    - docker push "$CI_REGISTRY_IMAGE/$IMAGE_NAME:$CI_COMMIT_SHA"
+    - docker push "$CI_REGISTRY_IMAGE/$IMAGE_NAME:$CI_COMMIT_REF_SLUG-latest"
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "develop"'
+    - when: never
+
+build_backend:
+  extends: .build_image
+  variables:
+    IMAGE_NAME: "backend"
+    DOCKERFILE: "backend/Dockerfile"
+    BUILD_CONTEXT: "."
+
+build_frontend:
+  extends: .build_image
+  variables:
+    IMAGE_NAME: "frontend"
+    DOCKERFILE: "frontend/Dockerfile"
+    BUILD_CONTEXT: "frontend"
+
+.ssh_deploy_base:
+  image: alpine:3.20
+  before_script:
+    - apk add --no-cache openssh-client
+    - mkdir -p "$HOME/.ssh"
+    - chmod 700 "$HOME/.ssh"
+    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' > "$HOME/.ssh/id_rsa"
+    - chmod 600 "$HOME/.ssh/id_rsa"
+
+deploy_stage:
+  stage: deploy
+  extends: .ssh_deploy_base
+  needs:
+    - build_backend
+    - build_frontend
+  environment:
+    name: stage
+    url: http://stage.qalab.pantatech.ru
+  resource_group: stage
+  allow_failure: false
+  script:
+    - |
+      set -euo pipefail
+      SSH_OPTS="-o StrictHostKeyChecking=no"
+      if [ -n "${SSH_KNOWN_HOSTS:-}" ]; then
+        echo "$SSH_KNOWN_HOSTS" > "$HOME/.ssh/known_hosts"
+        chmod 644 "$HOME/.ssh/known_hosts"
+        SSH_OPTS="-o StrictHostKeyChecking=yes"
+      fi
+
+      ssh $SSH_OPTS "${STAGE_SSH_USER}@${STAGE_SSH_HOST}" "mkdir -p '${STAGE_DEPLOY_PATH}/backend/db' '${STAGE_DEPLOY_PATH}/certbot/conf' '${STAGE_DEPLOY_PATH}/certbot/www'"
+      scp $SSH_OPTS docker-compose.deploy.yml "${STAGE_NGINX_CONF}" "${STAGE_SSH_USER}@${STAGE_SSH_HOST}:${STAGE_DEPLOY_PATH}/"
+      printf '%s\n' "$CI_REGISTRY_PASSWORD" | ssh $SSH_OPTS "${STAGE_SSH_USER}@${STAGE_SSH_HOST}" "docker login '$CI_REGISTRY' -u '$CI_REGISTRY_USER' --password-stdin"
+
+      ssh $SSH_OPTS "${STAGE_SSH_USER}@${STAGE_SSH_HOST}" "
+        set -euo pipefail
+        cd '${STAGE_DEPLOY_PATH}'
+        export CI_REGISTRY_IMAGE='${CI_REGISTRY_IMAGE}'
+        export IMAGE_TAG='${CI_COMMIT_SHA}'
+        export NGINX_CONF_FILE='${STAGE_NGINX_CONF}'
+        docker compose -f docker-compose.deploy.yml pull
+        docker compose -f docker-compose.deploy.yml up -d --remove-orphans
+        echo '${CI_COMMIT_SHA}' > .current_stage_tag
+      "
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "develop"'
+      when: manual
+    - when: never

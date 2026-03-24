@@ -1,0 +1,39 @@
+services:
+  backend:
+    image: ${CI_REGISTRY_IMAGE}/backend:${IMAGE_TAG}
+    restart: unless-stopped
+    environment:
+      - SQLALCHEMY_DATABASE_URL=sqlite:////app/db/sandbox.db
+    volumes:
+      - ./backend/db:/app/db
+    networks:
+      - appnet
+
+  frontend:
+    image: ${CI_REGISTRY_IMAGE}/frontend:${IMAGE_TAG}
+    restart: unless-stopped
+    depends_on:
+      - backend
+    networks:
+      - appnet
+
+  nginx:
+    image: nginx:stable-alpine
+    container_name: qalab-nginx
+    restart: unless-stopped
+    depends_on:
+      - backend
+      - frontend
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./${NGINX_CONF_FILE:-nginx-stage.conf}:/etc/nginx/conf.d/default.conf:ro
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
+    networks:
+      - appnet
+
+networks:
+  appnet:
+    driver: bridge
